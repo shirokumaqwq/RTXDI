@@ -83,7 +83,7 @@ void main(uint2 globalIdx : SV_DispatchThreadID)
         }
 #endif
 
-        if (g_Const.enableTextures)
+        if (g_Const.enableTextures && g_Const.colorDenoiserMode != 2) //colorWeight
         {
             diffuse_illumination.rgb *= diffuseAlbedo;
             specular_illumination.rgb *= max(0.01, specularF0);

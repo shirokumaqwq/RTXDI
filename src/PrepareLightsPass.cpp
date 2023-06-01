@@ -352,6 +352,7 @@ void PrepareLightsPass::Process(
     std::vector<PrepareLightsTask> tasks;
     std::vector<PolymorphicLightInfo> primitiveLightInfos;
     uint32_t lightBufferOffset = 0;
+    uint32_t emissionInstanceNum = 0;
     std::vector<uint32_t> geometryInstanceToLight(m_Scene->GetSceneGraph()->GetGeometryInstancesCount(), RTXDI_INVALID_LIGHT_INDEX);
 
     const auto& instances = m_Scene->GetSceneGraph()->GetMeshInstances();
@@ -361,7 +362,7 @@ void PrepareLightsPass::Process(
 
         assert(instance->GetGeometryInstanceIndex() < geometryInstanceToLight.size());
         uint32_t firstGeometryInstanceIndex = instance->GetGeometryInstanceIndex();
-
+        bool flag = false;
         for (size_t geometryIndex = 0; geometryIndex < mesh->geometries.size(); ++geometryIndex)
         {
             const auto& geometry = mesh->geometries[geometryIndex];
@@ -377,6 +378,7 @@ void PrepareLightsPass::Process(
                 continue;
             }
 
+            flag = true;
             geometryInstanceToLight[firstGeometryInstanceIndex + geometryIndex] = lightBufferOffset;
 
             // find the previous offset of this instance in the light buffer
@@ -397,6 +399,8 @@ void PrepareLightsPass::Process(
 
             tasks.push_back(task);
         }
+        if (flag)
+            emissionInstanceNum++;
     }
 
     commandList->writeBuffer(m_GeometryInstanceToLightBuffer, geometryInstanceToLight.data(), geometryInstanceToLight.size() * sizeof(uint32_t));

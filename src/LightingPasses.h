@@ -61,6 +61,15 @@ enum class ResamplingMode : uint32_t
     FusedSpatiotemporal = 4,
 };
 
+enum class ColorDenoiserMode : uint32_t
+{
+    None                = 0,
+    DiffuseOnly         = 1,
+    Both                = 2,
+    Split               = 3,
+    MultiSampleShading  = 4,
+};
+
 struct ReStirGIParameters
 {
     ResamplingMode  resamplingMode = ResamplingMode::TemporalAndSpatial;
@@ -149,6 +158,8 @@ public:
         ibool enableRayCounts = true;
         ibool enablePermutationSampling = true;
         ibool visualizeRegirCells = false;
+
+        ColorDenoiserMode colorDenoiserMode = ColorDenoiserMode::DiffuseOnly;
 
         uint32_t numPrimaryRegirSamples = 8;
         uint32_t numPrimaryLocalLightSamples = 8;

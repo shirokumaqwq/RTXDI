@@ -221,6 +221,7 @@ public:
         }
 
         std::filesystem::path scenePath = "/media/bistro-rtxdi.scene.json";
+        //std::filesystem::path scenePath = "/media/Arcade/new2/Arcade.gltf";
 
         m_DescriptorTableManager = std::make_shared<engine::DescriptorTableManager>(GetDevice(), m_BindlessLayout);
 

@@ -278,6 +278,7 @@ void UserInterface::GeneralRenderingSettings()
         }
 
         ImGui::Checkbox("Rasterize G-Buffer", (bool*)&m_ui.rasterizeGBuffer);
+        //ImGui::Checkbox("Path Tracing", (bool*)&m_ui.pathTracing);
 
         int resolutionScalePercents = int(m_ui.resolutionScale * 100.f);
         ImGui::SliderInt("Resolution Scale (%)", &resolutionScalePercents, 50, 100);
@@ -318,9 +319,9 @@ void UserInterface::SamplingSettings()
             ImGui::Checkbox("Checkerboard Rendering", &enableCheckerboardSampling);
             m_ui.rtxdiContextParams.CheckerboardSamplingMode = enableCheckerboardSampling ? rtxdi::CheckerboardMode::Black : rtxdi::CheckerboardMode::Off;
 
-            ImGui::Combo("ReGIR Mode", (int*)&m_ui.rtxdiContextParams.ReGIR.Mode, "Disabled\0Grid\0Onion\0");
+            ImGui::Combo("ReGIR Mode", (int*)&m_ui.rtxdiContextParams.ReGIR.Mode, "Disabled\0Grid\0Onion\0AlignGrid\0");
             ImGui::DragInt("Lights per Cell", (int*)&m_ui.rtxdiContextParams.ReGIR.LightsPerCell, 1, 32, 8192);
-            if (m_ui.rtxdiContextParams.ReGIR.Mode == rtxdi::ReGIRMode::Grid)
+            if (m_ui.rtxdiContextParams.ReGIR.Mode == rtxdi::ReGIRMode::Grid || m_ui.rtxdiContextParams.ReGIR.Mode == rtxdi::ReGIRMode::AlignGrid)
             {
                 ImGui::DragInt3("Grid Resolution", (int*)&m_ui.rtxdiContextParams.ReGIR.GridSize.x, 1, 1, 64);
             }
@@ -392,6 +393,16 @@ void UserInterface::SamplingSettings()
         
         if (isUsingReStir)
         {
+            // qwq
+            ImGui::PushItemWidth(180.f);
+            m_ui.resetAccumulation |= ImGui::Combo("Color Denoiser Mode", (int*)&m_ui.lightingSettings.colorDenoiserMode,
+                "None\0"
+                "Diffuse Only\0"
+                "Both\0"
+                "Split \0"
+                "Multi-sample Shading\0");
+            ImGui::PopItemWidth();
+
             ImGui::PushItemWidth(180.f);
             m_ui.resetAccumulation |= ImGui::Combo("Resampling Mode", (int*)&m_ui.lightingSettings.resamplingMode,
                 "None\0"
@@ -465,7 +476,7 @@ void UserInterface::SamplingSettings()
                     ImGui::SliderFloat("Permutation Sampling Threshold", &m_ui.lightingSettings.permutationSamplingThreshold, 0.8f, 1.f);
                     ShowHelpMarker("Higher values result in disabling permutation sampling on less complex surfaces.");
                 }
-                samplingSettingsChanged |= ImGui::SliderInt("Max History Length", (int*)&m_ui.lightingSettings.maxHistoryLength, 1, 100);
+                samplingSettingsChanged |= ImGui::SliderInt("Max History Length", (int*)&m_ui.lightingSettings.maxHistoryLength, 1, 1024);
 
                 samplingSettingsChanged |= ImGui::Checkbox("##enableBoilingFilter", (bool*)&m_ui.lightingSettings.enableBoilingFilter);
                 ImGui::SameLine();

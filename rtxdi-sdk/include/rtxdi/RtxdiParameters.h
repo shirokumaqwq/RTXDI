@@ -41,6 +41,7 @@
 #define RTXDI_REGIR_DISABLED 0
 #define RTXDI_REGIR_GRID 1
 #define RTXDI_REGIR_ONION 2
+#define RTXDI_REGIR_ALIGNGRID 3
 
 #ifndef RTXDI_REGIR_MODE
 #define RTXDI_REGIR_MODE RTXDI_REGIR_DISABLED
@@ -177,6 +178,10 @@ struct RTXDI_PackedReservoir
     uint32_t distanceAge;
     float targetPdf;
     float weight;
+#ifdef __cplusplus
+    using float3 = float[3];
+#endif
+    float3 colorWeight;
 };
 
 struct RTXDI_PackedGIReservoir

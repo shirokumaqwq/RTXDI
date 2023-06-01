@@ -228,7 +228,11 @@ uint32_t rtxdi::Context::GetReGIRLightSlotCount() const
             * m_Params.ReGIR.GridSize.y
             * m_Params.ReGIR.GridSize.z
             * m_Params.ReGIR.LightsPerCell;
-
+    case ReGIRMode::AlignGrid:
+        return m_Params.ReGIR.GridSize.x
+            * m_Params.ReGIR.GridSize.y
+            * m_Params.ReGIR.GridSize.z
+            * m_Params.ReGIR.LightsPerCell;    
     case ReGIRMode::Onion:
         return m_OnionCells * m_Params.ReGIR.LightsPerCell;
     }

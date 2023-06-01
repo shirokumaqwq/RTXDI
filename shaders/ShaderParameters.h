@@ -137,6 +137,8 @@ struct CompositingConstants
     uint enableEnvironmentMap;
     uint environmentMapTextureIndex;
 
+    uint colorDenoiserMode;
+
     float environmentScale;
     float environmentRotation;
     float noiseMix;
@@ -222,6 +224,8 @@ struct ResamplingConstants
     uint enableBrdfAdditiveBlend;
     uint enableAlphaTestedGeometry;
     uint enableReSTIRIndirect;
+
+    uint colorDenoiserMode;
     
     uint enableTransparentGeometry;
     uint enableDenoiserInputPacking;

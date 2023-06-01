@@ -73,6 +73,67 @@ bool ShadeSurfaceWithLightSample(
     return needToStore;
 }
 
+bool ShadeSurfaceWithLightSample(
+    inout RTXDI_Reservoir reservoir,
+    RAB_Surface surface,
+    RAB_LightSample lightSample,
+    bool previousFrameTLAS,
+    bool enableVisibilityReuse,
+    out float3 diffuse,
+    out float3 specular,
+    out float lightDistance,
+    out float3 visibility)
+{
+    diffuse = 0;
+    specular = 0;
+    lightDistance = 0;
+
+    if (lightSample.solidAnglePdf <= 0)
+        return false;
+
+    bool needToStore = false;
+    visibility = float3(1.0, 1.0, 1.0);
+    if (g_Const.enableFinalVisibility)
+    {
+        bool visibilityReused = false;
+
+        if (g_Const.reuseFinalVisibility && enableVisibilityReuse)
+        {
+            RTXDI_VisibilityReuseParameters rparams;
+            rparams.maxAge = g_Const.finalVisibilityMaxAge;
+            rparams.maxDistance = g_Const.finalVisibilityMaxDistance;
+
+            visibilityReused = RTXDI_GetReservoirVisibility(reservoir, rparams, visibility);
+        }
+
+        if (!visibilityReused)
+        {
+            if (previousFrameTLAS && g_Const.enablePreviousTLAS)
+                visibility = GetFinalVisibility(PrevSceneBVH, surface, lightSample.position);
+            else
+                visibility = GetFinalVisibility(SceneBVH, surface, lightSample.position);
+            RTXDI_StoreVisibilityInReservoir(reservoir, visibility, g_Const.discardInvisibleSamples);
+            needToStore = true;
+        }
+
+        lightSample.radiance *= visibility;
+    }
+
+    lightSample.radiance *= RTXDI_GetReservoirInvPdf(reservoir) / lightSample.solidAnglePdf;
+
+    if (any(lightSample.radiance > 0))
+    {
+        SplitBrdf brdf = EvaluateBrdf(surface, lightSample.position);
+
+        diffuse = brdf.demodulatedDiffuse * lightSample.radiance;
+        specular = brdf.specular * lightSample.radiance;
+
+        lightDistance = length(lightSample.position - surface.worldPos);
+    }
+
+    return needToStore;
+}
+
 #endif // RESERVOIR_HLSLI
 
 float3 DemodulateSpecular(float3 surfaceSpecularF0, float3 specular)

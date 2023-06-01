@@ -47,7 +47,8 @@ namespace rtxdi
     {
         Disabled = 0,
         Grid = 1,
-        Onion = 2
+        Onion = 2,
+        AlignGrid = 3
     };
     
     struct ReGIRContextParameters
@@ -124,7 +125,7 @@ namespace rtxdi
         bool enableLocalLightImportanceSampling = false;
 
         // Size of the smallest ReGIR cell, in world units.
-        float regirCellSize = 1.f;
+        float regirCellSize = 2.5f;
 
         // Scale of jitter applied to surface positions when sampling the ReGIR grid,
         // measured in grid cells. The value of 1.0 means plus or minus one grid cell.

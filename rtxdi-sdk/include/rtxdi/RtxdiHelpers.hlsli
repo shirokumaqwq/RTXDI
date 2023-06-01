@@ -124,6 +124,57 @@ bool RTXDI_ReGIR_CellIndexToWorldPos(RTXDI_ResamplingRuntimeParameters params, i
     return true;
 }
 
+#elif RTXDI_REGIR_MODE == RTXDI_REGIR_ALIGNGRID
+
+float RTXDI_ReGIR_GetJitterScale(RTXDI_ResamplingRuntimeParameters params, float3 worldPos)
+{
+    return params.regirCommon.samplingJitter * params.regirCommon.cellSize;
+}
+
+int RTXDI_ReGIR_WorldPosToCellIndex(RTXDI_ResamplingRuntimeParameters params, float3 worldPos)
+{
+
+    const float3 camearaCenter = float3(params.regirCommon.centerX, params.regirCommon.centerY, params.regirCommon.centerZ);
+    const int3 gridCellCount = int3(params.regirGrid.cellsX, params.regirGrid.cellsY, params.regirGrid.cellsZ);
+
+    const int3 gridCenterIndex = floor(camearaCenter / params.regirCommon.cellSize);
+    int3 cellIndex = floor(worldPos / params.regirCommon.cellSize);
+    int3 gridCell = cellIndex >= 0 ? cellIndex % gridCellCount : gridCellCount - ((-cellIndex) % gridCellCount);
+    
+    int3 offset = cellIndex - gridCenterIndex;
+    if( offset.x < - 0.5 * gridCellCount.x || offset.x >= 0.5 * gridCellCount.x 
+        || offset.y < -0.5 * gridCellCount.y || offset.y >= 0.5 * gridCellCount.y 
+        || offset.z < -0.5 * gridCellCount.z || offset.z >= 0.5 * gridCellCount.z)
+        return -1;
+
+    return gridCell.x + (gridCell.y + (gridCell.z * gridCellCount.y)) * gridCellCount.x;
+}
+
+bool RTXDI_ReGIR_CellIndexToWorldPos(RTXDI_ResamplingRuntimeParameters params, int cellIndex, out float3 cellCenter, out float cellRadius)
+{
+    const float3 camearaCenter = float3(params.regirCommon.centerX, params.regirCommon.centerY, params.regirCommon.centerZ);
+    const int3 gridCellCount = int3(params.regirGrid.cellsX, params.regirGrid.cellsY, params.regirGrid.cellsZ);
+
+    uint3 cellPosition;
+    cellPosition.x = cellIndex;
+    cellPosition.y = cellPosition.x / params.regirGrid.cellsX;
+    cellPosition.x %= params.regirGrid.cellsX;
+    cellPosition.z = cellPosition.y / params.regirGrid.cellsY;
+    cellPosition.y %= params.regirGrid.cellsY;
+    if (cellPosition.z >= params.regirGrid.cellsZ)
+        return false;
+    
+    int3 gridCenterIndex = floor(camearaCenter / params.regirCommon.cellSize);
+    float3 gridCenter = gridCenterIndex * params.regirCommon.cellSize + 0.5 * params.regirCommon.cellSize;
+    gridCenterIndex = gridCenterIndex >= 0 ? gridCenterIndex % gridCellCount : gridCellCount - ((-gridCenterIndex) % gridCellCount);
+    int3 cellOffset = (cellPosition - gridCenterIndex + gridCellCount) % gridCellCount;
+    cellOffset = cellOffset >= (gridCellCount / 2) ? cellOffset - gridCellCount : cellOffset;
+    cellCenter= cellOffset * params.regirCommon.cellSize + gridCenter;
+
+    cellRadius = params.regirCommon.cellSize * sqrt(3.0);
+    return true;
+}
+
 #elif RTXDI_REGIR_MODE == RTXDI_REGIR_ONION
 
 float RTXDI_ReGIR_GetJitterScale(RTXDI_ResamplingRuntimeParameters params, float3 worldPos)

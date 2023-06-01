@@ -192,6 +192,7 @@ bool RTXDI_InternalSimpleResample(
         reservoir.packedVisibility = newReservoir.packedVisibility;
         reservoir.spatialDistance = newReservoir.spatialDistance;
         reservoir.age = newReservoir.age;
+        reservoir.colorWeight = newReservoir.colorWeight;
     }
 
     return selectSample;
@@ -1293,6 +1294,7 @@ RTXDI_Reservoir RTXDI_TemporalResampling(
             weightAtCurrent = RAB_GetLightSampleTargetPdfForSurface(candidateLightSample, surface);
         }
 
+        float3 colorWeight = state.colorWeight * state.M + prevSample.colorWeight * previousM;
         bool sampleSelected = RTXDI_CombineReservoirs(state, prevSample, RAB_GetNextRandom(rng), weightAtCurrent);
         if(sampleSelected)
         {
@@ -1300,6 +1302,8 @@ RTXDI_Reservoir RTXDI_TemporalResampling(
             selectedLightPrevID = int(originalPrevLightID);
             selectedLightSample = candidateLightSample;
         }
+
+        state.colorWeight = colorWeight / state.M;
     }
 
 #if RTXDI_ALLOWED_BIAS_CORRECTION >= RTXDI_BIAS_CORRECTION_BASIC
@@ -1345,6 +1349,7 @@ RTXDI_Reservoir RTXDI_TemporalResampling(
 
     return state;
 }
+
 
 // A structure that groups the application-provided settings for spatial resampling.
 struct RTXDI_SpatialResamplingParameters
@@ -1524,6 +1529,9 @@ RTXDI_Reservoir RTXDI_SpatialResampling(
     //   results for the 2nd time through.
     uint cachedResult = 0;
 
+    float3 colorWeight = 0;
+    float3 centerColorWeight = state.colorWeight;
+    uint validNeighborNum = 0;
     // Walk the specified number of neighbors, resampling using RIS
     for (i = 0; i < numSpatialSamples; ++i)
     {
@@ -1570,6 +1578,11 @@ RTXDI_Reservoir RTXDI_SpatialResampling(
                 candidateLight, centerSurface, RTXDI_GetReservoirSampleUV(neighborSample));
             
             neighborWeight = RAB_GetLightSampleTargetPdfForSurface(candidateLightSample, centerSurface);
+
+            // color weight corrector
+            float3 diffuseColor = RAB_GetLightSampleDiffuseColorForSurface(candidateLightSample, centerSurface);
+            colorWeight += neighborSample.weightSum * diffuseColor;
+            validNeighborNum++;
         }
         
         if (RTXDI_CombineReservoirs(state, neighborSample, RAB_GetNextRandom(rng), neighborWeight))
@@ -1579,6 +1592,12 @@ RTXDI_Reservoir RTXDI_SpatialResampling(
             selectedLightSample = candidateLightSample;
         }
     }
+
+    if((centerSample.M + validNeighborNum) == 0)
+        colorWeight = 1;
+    else
+        colorWeight = (centerColorWeight * centerSample.M + colorWeight * validNeighborNum) / (centerSample.M + validNeighborNum);
+    state.colorWeight = colorWeight;
 
     if (RTXDI_IsValidReservoir(state))
     {
@@ -1645,6 +1664,19 @@ RTXDI_Reservoir RTXDI_SpatialResampling(
             RTXDI_FinalizeResampling(state, 1.0, state.M);
         }
     }
+
+// #if RTXDI_ALLOWED_BIAS_CORRECTION >= RTXDI_BIAS_CORRECTION_RAY_TRACED
+
+//     if(sparams.biasCorrectionMode == RTXDI_BIAS_CORRECTION_RAY_TRACED
+//      && RTXDI_IsValidReservoir(state))
+//     {
+//         const RAB_LightSample selectedSample = RAB_SamplePolymorphicLight(
+//         selectedLight, centerSurface, RTXDI_GetReservoirSampleUV(state));
+
+//         if(!RAB_GetConservativeVisibility(centerSurface, selectedSample))
+//             RTXDI_StoreVisibilityInReservoir(state, 0, true);
+//     }
+// #endif
 
     return state;
 }

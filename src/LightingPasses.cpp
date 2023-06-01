@@ -272,6 +272,9 @@ donut::engine::ShaderMacro LightingPasses::GetRegirMacro(const rtxdi::ContextPar
     case rtxdi::ReGIRMode::Onion:
         regirMode = "RTXDI_REGIR_ONION";
         break;
+    case rtxdi::ReGIRMode::AlignGrid:
+        regirMode = "RTXDI_REGIR_ALIGNGRID";
+        break;    
     }
 
     return { "RTXDI_REGIR_MODE", regirMode };
@@ -337,6 +340,9 @@ void LightingPasses::FillResamplingConstants(
     constants.enableTransparentGeometry = lightingSettings.enableTransparentGeometry;
     constants.enableDenoiserInputPacking = lightingSettings.enableDenoiserInputPacking;
     constants.visualizeRegirCells = lightingSettings.visualizeRegirCells;
+
+    constants.colorDenoiserMode = (uint)lightingSettings.colorDenoiserMode;
+
 #if WITH_NRD
     if (lightingSettings.denoiserMode != DENOISER_MODE_OFF)
     {

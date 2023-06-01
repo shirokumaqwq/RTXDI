@@ -121,6 +121,12 @@ struct RAB_LightSample
     PolymorphicLightType lightType;
 };
 
+struct RAB_SplitRadiance
+{
+    float3 diffuse;
+    float3 specular;
+};
+
 typedef PolymorphicLightInfo RAB_LightInfo;
 typedef RandomSamplerState RAB_RandomSamplerState;
 
@@ -641,6 +647,53 @@ float RAB_GetLightSampleTargetPdfForSurface(RAB_LightSample lightSample, RAB_Sur
     
     return calcLuminance(reflectedRadiance) / lightSample.solidAnglePdf;
 }
+
+float3 RAB_GetLightSampleDiffuseColorForSurface(RAB_LightSample lightSample, RAB_Surface surface)
+{
+    if (lightSample.solidAnglePdf <= 0)
+        return 0;
+
+    float3 L = normalize(lightSample.position - surface.worldPos);
+
+    if (dot(L, surface.geoNormal) <= 0)
+        return 0;
+    
+    float3 V = surface.viewDir;
+
+    float d = Lambert(surface.normal, -L);
+
+    float3 reflectedRadiance = lightSample.radiance * d;
+    
+    return reflectedRadiance / lightSample.solidAnglePdf;
+}
+
+RAB_SplitRadiance RAB_GetLightSampleSplitRadianceForSurface(RAB_LightSample lightSample, RAB_Surface surface)
+{
+    RAB_SplitRadiance splitRadiance = (RAB_SplitRadiance)0;
+    if (lightSample.solidAnglePdf <= 0)
+        return splitRadiance;
+
+    float3 L = normalize(lightSample.position - surface.worldPos);
+
+    if (dot(L, surface.geoNormal) <= 0)
+        return splitRadiance;
+    
+    float3 V = surface.viewDir;
+
+    float d = Lambert(surface.normal, -L);
+    
+    float3 s;
+    if (surface.roughness == 0)
+        s = 0;
+    else
+        s = GGX_times_NdotL(V, L, surface.normal, max(surface.roughness, kMinRoughness), surface.specularF0);
+
+    splitRadiance.diffuse = lightSample.radiance * d / lightSample.solidAnglePdf;
+    splitRadiance.specular = lightSample.radiance * s / lightSample.solidAnglePdf;
+
+    return splitRadiance;
+}
+
 
 // Computes the weight of the given light for arbitrary surfaces located inside 
 // the specified volume. Used for world-space light grid construction.

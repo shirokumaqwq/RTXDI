@@ -57,6 +57,9 @@ struct RTXDI_Reservoir
 
     // Cannonical weight when using pairwise MIS (ignored except during pairwise MIS computations)
     float canonicalWeight;
+
+    //
+    float3 colorWeight;
 };
 
 // Encoding helper constants for RTXDI_PackedReservoir.mVisibility
@@ -98,6 +101,7 @@ RTXDI_PackedReservoir RTXDI_PackReservoir(const RTXDI_Reservoir reservoir)
 
     data.targetPdf = reservoir.targetPdf;
     data.weight = reservoir.weightSum;
+    data.colorWeight = reservoir.colorWeight;
 
     return data;
 }
@@ -126,6 +130,7 @@ RTXDI_Reservoir RTXDI_EmptyReservoir()
     s.spatialDistance = int2(0, 0);
     s.age = 0;
     s.canonicalWeight = 0;
+    s.colorWeight = float3(0.0, 0.0, 0.0);
     return s;
 }
 
@@ -143,6 +148,7 @@ RTXDI_Reservoir RTXDI_UnpackReservoir(RTXDI_PackedReservoir data)
     res.spatialDistance.y = int(data.distanceAge << (32 - RTXDI_PackedReservoir_DistanceYShift - RTXDI_PackedReservoir_DistanceChannelBits)) >> (32 - RTXDI_PackedReservoir_DistanceChannelBits);
     res.age = (data.distanceAge >> RTXDI_PackedReservoir_AgeShift) & RTXDI_PackedReservoir_MaxAge;
     res.canonicalWeight = 0.0f;
+    res.colorWeight = data.colorWeight;
 
     // Discard reservoirs that have Inf/NaN
     if (isinf(res.weightSum) || isnan(res.weightSum)) {
@@ -178,6 +184,7 @@ void RTXDI_StoreVisibilityInReservoir(
         // Keep M for correct resampling, remove the actual sample
         reservoir.lightData = 0;
         reservoir.weightSum = 0;
+        reservoir.colorWeight = float3(0.0, 0.0, 0.0);
     }
 }
 

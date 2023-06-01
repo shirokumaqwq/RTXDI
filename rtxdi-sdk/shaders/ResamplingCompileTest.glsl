@@ -38,7 +38,13 @@ struct RAB_LightSample
     uint unused;
 };
 
+
 struct RAB_LightInfo 
+{
+    uint unused;
+};
+
+struct RAB_SplitRadiance
 {
     uint unused;
 };
@@ -122,6 +128,16 @@ float RAB_GetSurfaceBrdfPdf(RAB_Surface surface, float3 dir)
 float RAB_GetLightSampleTargetPdfForSurface(RAB_LightSample lightSample, RAB_Surface surface)
 {
     return 1.0;
+}
+
+float RAB_GetLightSampleDiffuseColorForSurface(RAB_LightSample lightSample, RAB_Surface surface)
+{
+    return 1.0;
+}
+
+RAB_SplitRadiance RAB_GetLightSampleSplitRadianceForSurface(RAB_LightSample lightSample, RAB_Surface surface)
+{
+    return RAB_SplitRadiance(0);
 }
 
 float RAB_GetLightTargetPdfForVolume(RAB_LightInfo light, float3 volumeCenter, float volumeRadius)

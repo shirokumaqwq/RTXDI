@@ -56,5 +56,16 @@ void RayGen()
         }
     }
 
+    RAB_SplitRadiance splitRadiance = RAB_GetLightSampleSplitRadianceForSurface(lightSample, surface);
+
+    if(g_Const.colorDenoiserMode == 1)
+    {
+        reservoir.colorWeight = RTXDI_GetReservoirInvPdf(reservoir) * splitRadiance.diffuse;
+    }
+    else if(g_Const.colorDenoiserMode == 2)
+    {
+        reservoir.colorWeight =  RTXDI_GetReservoirInvPdf(reservoir) * (splitRadiance.diffuse * surface.diffuseAlbedo + splitRadiance.specular);
+    }
+
     RTXDI_StoreReservoir(reservoir, params, GlobalIndex, g_Const.initialOutputBufferIndex);
 }

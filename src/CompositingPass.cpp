@@ -153,6 +153,7 @@ void CompositingPass::Render(
     view.FillPlanarViewConstants(constants.view);
     viewPrev.FillPlanarViewConstants(constants.viewPrev);
     constants.enableTextures = ui.enableTextures;
+    constants.colorDenoiserMode = (uint)ui.lightingSettings.colorDenoiserMode;;
     constants.denoiserMode = denoiserMode;
     constants.checkerboard = checkerboard;
     constants.enableEnvironmentMap = (environmentLight.textureIndex >= 0);

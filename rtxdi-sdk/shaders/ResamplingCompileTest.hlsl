@@ -34,6 +34,11 @@ struct RAB_LightInfo
     uint unused;
 };
 
+struct RAB_SplitRadiance
+{
+    uint unused;
+};
+
 RAB_Surface RAB_EmptySurface()
 {
     return RAB_Surface(0);
@@ -115,9 +120,19 @@ float RAB_GetLightSampleTargetPdfForSurface(RAB_LightSample lightSample, RAB_Sur
     return 1.0;
 }
 
+float RAB_GetLightSampleDiffuseColorForSurface(RAB_LightSample lightSample, RAB_Surface surface)
+{
+    return 1.0;
+}
+
 float RAB_GetLightTargetPdfForVolume(RAB_LightInfo light, float3 volumeCenter, float volumeRadius)
 {
     return 1.0;
+}
+
+RAB_SplitRadiance RAB_GetLightSampleSplitRadianceForSurface(RAB_LightSample lightSample, RAB_Surface surface)
+{
+    return (RAB_SplitRadiance)0;
 }
 
 RAB_LightSample RAB_SamplePolymorphicLight(RAB_LightInfo lightInfo, RAB_Surface surface, float2 uv)
