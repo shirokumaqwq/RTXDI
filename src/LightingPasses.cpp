@@ -424,6 +424,9 @@ void LightingPasses::FillResamplingConstants(
         constants.environmentMapImportanceSampling = 1;
     }
 
+    constants.numEmissionThing = frameParameters.numEmissionThing;
+    constants.currentFrameLightOffset = frameParameters.currentFrameLightOffset;
+
     m_CurrentFrameOutputReservoir = constants.shadeInputBufferIndex;
 }
 
