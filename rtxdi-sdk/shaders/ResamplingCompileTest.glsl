@@ -245,10 +245,15 @@ layout(set = 0, binding = 3) buffer GI_RESERVOIR_BUFFER {
     RTXDI_PackedGIReservoir u_GIReservoirs[];
 };
 
+layout(set = 0, binding = 4) buffer VISIBILITY_BUFFER {
+    uvec u_GridVisibility[];
+};
+
 #define RTXDI_RIS_BUFFER u_RisBuffer
 #define RTXDI_LIGHT_RESERVOIR_BUFFER u_LightReservoirs
 #define RTXDI_NEIGHBOR_OFFSETS_BUFFER t_NeighborOffsets
 #define RTXDI_GI_RESERVOIR_BUFFER u_GIReservoirs
+#define RTXDI_VISIBILITY_BUFFER u_GridVisibility
 
 #include "rtxdi/ResamplingFunctions.hlsli"
 

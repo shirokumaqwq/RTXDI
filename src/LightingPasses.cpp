@@ -82,6 +82,7 @@ LightingPasses::LightingPasses(
         nvrhi::BindingLayoutItem::Texture_SRV(23),
         nvrhi::BindingLayoutItem::Texture_SRV(24),
         nvrhi::BindingLayoutItem::StructuredBuffer_SRV(25),
+        nvrhi::BindingLayoutItem::TypedBuffer_SRV(26),
 
         nvrhi::BindingLayoutItem::StructuredBuffer_UAV(0),
         nvrhi::BindingLayoutItem::Texture_UAV(1),
@@ -95,6 +96,7 @@ LightingPasses::LightingPasses(
         nvrhi::BindingLayoutItem::TypedBuffer_UAV(11),
         nvrhi::BindingLayoutItem::TypedBuffer_UAV(12),
         nvrhi::BindingLayoutItem::StructuredBuffer_UAV(13),
+        nvrhi::BindingLayoutItem::TypedBuffer_UAV(14),
 
         nvrhi::BindingLayoutItem::VolatileConstantBuffer(0),
         nvrhi::BindingLayoutItem::PushConstants(1, sizeof(PerPassConstants)),
@@ -159,6 +161,7 @@ void LightingPasses::CreateBindingSet(
             nvrhi::BindingSetItem::Texture_SRV(23, resources.EnvironmentPdfTexture),
             nvrhi::BindingSetItem::Texture_SRV(24, resources.LocalLightPdfTexture),
             nvrhi::BindingSetItem::StructuredBuffer_SRV(25, resources.GeometryInstanceToLightBuffer),
+            nvrhi::BindingSetItem::TypedBuffer_SRV(26, resources.VisibleLightIndexBuffer),
 
             nvrhi::BindingSetItem::StructuredBuffer_UAV(0, resources.LightReservoirBuffer),
             nvrhi::BindingSetItem::Texture_UAV(1, renderTargets.DiffuseLighting),
@@ -172,6 +175,7 @@ void LightingPasses::CreateBindingSet(
             nvrhi::BindingSetItem::TypedBuffer_UAV(11, resources.RisLightDataBuffer),
             nvrhi::BindingSetItem::TypedBuffer_UAV(12, m_Profiler->GetRayCountBuffer()),
             nvrhi::BindingSetItem::StructuredBuffer_UAV(13, resources.SecondaryGBuffer),
+            nvrhi::BindingSetItem::TypedBuffer_UAV(14, resources.VisibilityBuffer),
 
             nvrhi::BindingSetItem::ConstantBuffer(0, m_ConstantBuffer),
             nvrhi::BindingSetItem::PushConstants(1, sizeof(PerPassConstants)),
@@ -209,6 +213,7 @@ void LightingPasses::CreateBindingSet(
     m_LightReservoirBuffer = resources.LightReservoirBuffer;
     m_SecondarySurfaceBuffer = resources.SecondaryGBuffer;
     m_GIReservoirBuffer = resources.GIReservoirBuffer;
+    m_VisibilityBuffer = resources.VisibilityBuffer;
 }
 
 void LightingPasses::CreateComputePass(ComputePass& pass, const char* shaderName, const std::vector<donut::engine::ShaderMacro>& macros)
@@ -342,6 +347,8 @@ void LightingPasses::FillResamplingConstants(
     constants.visualizeRegirCells = lightingSettings.visualizeRegirCells;
 
     constants.colorDenoiserMode = (uint)lightingSettings.colorDenoiserMode;
+    constants.numEmissionThing = frameParameters.numEmissionThing;
+    constants.currentFrameLightOffset = frameParameters.currentFrameLightOffset;
 
 #if WITH_NRD
     if (lightingSettings.denoiserMode != DENOISER_MODE_OFF)

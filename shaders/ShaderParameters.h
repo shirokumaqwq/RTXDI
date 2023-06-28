@@ -76,7 +76,7 @@ struct PrepareLightsConstants
 struct PrepareLightsTask
 {
     uint instanceAndGeometryIndex; // low 12 bits are geometryIndex, mid 19 bits are instanceIndex, high bit is TASK_PRIMITIVE_LIGHT_BIT
-    uint triangleCount;
+    uint triangleCount; 
     uint lightBufferOffset;
     int previousLightBufferOffset; // -1 means no previous data
 };
@@ -137,8 +137,6 @@ struct CompositingConstants
     uint enableEnvironmentMap;
     uint environmentMapTextureIndex;
 
-    uint colorDenoiserMode;
-
     float environmentScale;
     float environmentRotation;
     float noiseMix;
@@ -147,6 +145,8 @@ struct CompositingConstants
     float noiseClampHigh;
     uint checkerboard;
     uint numRtxgiVolumes;
+    
+    uint colorDenoiserMode;
 };
 
 struct AccumulationConstants
@@ -225,8 +225,6 @@ struct ResamplingConstants
     uint enableAlphaTestedGeometry;
     uint enableReSTIRIndirect;
 
-    uint colorDenoiserMode;
-    
     uint enableTransparentGeometry;
     uint enableDenoiserInputPacking;
     uint visualizeRegirCells;
@@ -302,6 +300,13 @@ struct ResamplingConstants
 
     uint giEnableFinalVisibility;
     uint giEnableFinalMIS;
+
+    //
+    uint colorDenoiserMode;
+    uint numEmissionThing; //visibility buffer size
+    uint currentFrameLightOffset;
+    //uint3 padding;
+
 };
 
 struct PerPassConstants

@@ -43,6 +43,7 @@ private:
     nvrhi::BufferHandle m_LightIndexMappingBuffer;
     nvrhi::BufferHandle m_GeometryInstanceToLightBuffer;
     nvrhi::TextureHandle m_LocalLightPdfTexture;
+    nvrhi::BufferHandle m_VisibleLightIndexBuffer;
     
     uint32_t m_MaxLightsInBuffer;
     bool m_OddFrame = false;

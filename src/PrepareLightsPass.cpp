@@ -92,6 +92,7 @@ void PrepareLightsPass::CreateBindingSet(RtxdiResources& resources)
     m_GeometryInstanceToLightBuffer = resources.GeometryInstanceToLightBuffer;
     m_LocalLightPdfTexture = resources.LocalLightPdfTexture;
     m_MaxLightsInBuffer = uint32_t(resources.LightDataBuffer->getDesc().byteSize / (sizeof(PolymorphicLightInfo) * 2));
+    m_VisibleLightIndexBuffer = resources.VisibleLightIndexBuffer;
 }
 
 void PrepareLightsPass::CountLightsInScene(uint32_t& numEmissiveMeshes, uint32_t& numEmissiveTriangles)
@@ -352,8 +353,9 @@ void PrepareLightsPass::Process(
     std::vector<PrepareLightsTask> tasks;
     std::vector<PolymorphicLightInfo> primitiveLightInfos;
     uint32_t lightBufferOffset = 0;
-    uint32_t emissionInstanceNum = 0;
+    uint32_t numEmissionInstance = 0;
     std::vector<uint32_t> geometryInstanceToLight(m_Scene->GetSceneGraph()->GetGeometryInstancesCount(), RTXDI_INVALID_LIGHT_INDEX);
+    std::vector<uint32_t> visibleLightIndex;
 
     const auto& instances = m_Scene->GetSceneGraph()->GetMeshInstances();
     for (const auto& instance : instances)
@@ -362,7 +364,6 @@ void PrepareLightsPass::Process(
 
         assert(instance->GetGeometryInstanceIndex() < geometryInstanceToLight.size());
         uint32_t firstGeometryInstanceIndex = instance->GetGeometryInstanceIndex();
-        bool flag = false;
         for (size_t geometryIndex = 0; geometryIndex < mesh->geometries.size(); ++geometryIndex)
         {
             const auto& geometry = mesh->geometries[geometryIndex];
@@ -378,8 +379,8 @@ void PrepareLightsPass::Process(
                 continue;
             }
 
-            flag = true;
             geometryInstanceToLight[firstGeometryInstanceIndex + geometryIndex] = lightBufferOffset;
+            visibleLightIndex.push_back(lightBufferOffset);
 
             // find the previous offset of this instance in the light buffer
             auto pOffset = m_InstanceLightBufferOffsets.find(instanceHash);
@@ -398,9 +399,8 @@ void PrepareLightsPass::Process(
             lightBufferOffset += task.triangleCount;
 
             tasks.push_back(task);
+            numEmissionInstance++;
         }
-        if (flag)
-            emissionInstanceNum++;
     }
 
     commandList->writeBuffer(m_GeometryInstanceToLightBuffer, geometryInstanceToLight.data(), geometryInstanceToLight.size() * sizeof(uint32_t));
@@ -435,6 +435,7 @@ void PrepareLightsPass::Process(
         // record the current offset of this instance for use on the next frame
         m_PrimitiveLightBufferOffsets[pLight.get()] = lightBufferOffset;
 
+        visibleLightIndex.push_back(lightBufferOffset);
         lightBufferOffset += task.triangleCount;
 
         tasks.push_back(task);
@@ -447,6 +448,8 @@ void PrepareLightsPass::Process(
         else
             numFinitePrimLights++;
     }
+
+    commandList->writeBuffer(m_VisibleLightIndexBuffer, visibleLightIndex.data(), visibleLightIndex.size() * sizeof(uint32_t));
 
     assert(numImportanceSampledEnvironmentLights <= 1);
     
@@ -489,6 +492,9 @@ void PrepareLightsPass::Process(
     outFrameParameters.firstLocalLight += constants.currentFrameLightOffset;
     outFrameParameters.firstInfiniteLight += constants.currentFrameLightOffset;
     outFrameParameters.environmentLightIndex += constants.currentFrameLightOffset;
+
+    outFrameParameters.numEmissionThing = uint32_t(visibleLightIndex.size());
+    outFrameParameters.currentFrameLightOffset = m_MaxLightsInBuffer * m_OddFrame;
 
     m_OddFrame = !m_OddFrame;
 }

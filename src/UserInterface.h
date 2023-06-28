@@ -62,7 +62,7 @@ enum class QualityPreset : uint32_t
 
 struct RtxgiParameters
 {
-    ibool enabled = true;
+    ibool enabled = false;
     ibool showProbes = false;
     int selectedVolumeIndex = 0;
     float hysteresis = 0.99f;
@@ -155,6 +155,7 @@ struct UIData
     bool enableLocalLightImportanceSampling = true;
     float environmentIntensityBias = 0.f;
     float environmentRotation = 0.f;
+    bool enableSunLight = true;
     
     RtxgiParameters rtxgi;
     

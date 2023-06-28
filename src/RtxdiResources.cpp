@@ -158,6 +158,26 @@ RtxdiResources::RtxdiResources(
     giReservoirBufferDesc.debugName = "GIReservoirBuffer";
     giReservoirBufferDesc.canHaveUAVs = true;
     GIReservoirBuffer = device->createBuffer(giReservoirBufferDesc);
+
+    uint32_t maxEmissiveLights = maxEmissiveMeshes + maxPrimitiveLights;
+    nvrhi::BufferDesc VisibilityBufferDesc;
+    // TODO: 16*16*16 -> GridNum
+    VisibilityBufferDesc.byteSize = sizeof(uint32_t) * 2 * std::max((context.GetParameters().enableVisibilityVairanceSampling ? 1 : 0 ) * 16 * 16 * 16 * maxEmissiveLights, (uint32_t)1);
+    VisibilityBufferDesc.format = nvrhi::Format::R32_UINT;
+    VisibilityBufferDesc.initialState = nvrhi::ResourceStates::UnorderedAccess;
+    VisibilityBufferDesc.keepInitialState = true;
+    VisibilityBufferDesc.debugName = "VisibilityBuffer";
+    VisibilityBufferDesc.canHaveUAVs = true;
+    VisibilityBuffer = device->createBuffer(VisibilityBufferDesc);
+
+    nvrhi::BufferDesc visibleLightIndexBufferDesc;
+    visibleLightIndexBufferDesc.byteSize = sizeof(uint32_t) * maxEmissiveLights;
+    visibleLightIndexBufferDesc.format = nvrhi::Format::R32_UINT;
+    visibleLightIndexBufferDesc.initialState = nvrhi::ResourceStates::ShaderResource;
+    visibleLightIndexBufferDesc.keepInitialState = true;
+    visibleLightIndexBufferDesc.debugName = "VisibleLightIndexBuffer";
+    VisibleLightIndexBuffer = device->createBuffer(visibleLightIndexBufferDesc);
+
 }
 
 void RtxdiResources::InitializeNeighborOffsets(nvrhi::ICommandList* commandList, const rtxdi::Context& context)

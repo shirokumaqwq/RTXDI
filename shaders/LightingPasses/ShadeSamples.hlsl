@@ -163,6 +163,11 @@ void RayGen()
         specular = (denominator == 0.0) ? specular : 0;
     }
 
+    // if(GlobalIndex.x==0 && GlobalIndex.y==0)
+    //     InterlockedAdd(RTXDI_VISIBILITY_BUFFER[0], 1);
+    
+    // diffuse=float3(u_GridVisibility[0]/10000.0f,0,0);
+
     StoreShadingOutput(GlobalIndex, pixelPosition, 
         surface.viewDepth, surface.roughness, diffuse, specular, lightDistance, true, g_Const.enableDenoiserInputPacking);
 }

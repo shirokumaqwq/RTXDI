@@ -40,6 +40,8 @@ public:
     nvrhi::TextureHandle EnvironmentPdfTexture;
     nvrhi::TextureHandle LocalLightPdfTexture;
     nvrhi::BufferHandle GIReservoirBuffer;
+    nvrhi::BufferHandle VisibilityBuffer;
+    nvrhi::BufferHandle VisibleLightIndexBuffer;
 
     RtxdiResources(
         nvrhi::IDevice* device, 

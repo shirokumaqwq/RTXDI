@@ -319,6 +319,8 @@ void UserInterface::SamplingSettings()
             ImGui::Checkbox("Checkerboard Rendering", &enableCheckerboardSampling);
             m_ui.rtxdiContextParams.CheckerboardSamplingMode = enableCheckerboardSampling ? rtxdi::CheckerboardMode::Black : rtxdi::CheckerboardMode::Off;
 
+            ImGui::Checkbox("Visibility Variance Sampling", &m_ui.rtxdiContextParams.enableVisibilityVairanceSampling);
+
             ImGui::Combo("ReGIR Mode", (int*)&m_ui.rtxdiContextParams.ReGIR.Mode, "Disabled\0Grid\0Onion\0AlignGrid\0");
             ImGui::DragInt("Lights per Cell", (int*)&m_ui.rtxdiContextParams.ReGIR.LightsPerCell, 1, 32, 8192);
             if (m_ui.rtxdiContextParams.ReGIR.Mode == rtxdi::ReGIRMode::Grid || m_ui.rtxdiContextParams.ReGIR.Mode == rtxdi::ReGIRMode::AlignGrid)
@@ -1031,6 +1033,8 @@ void UserInterface::SceneSettings()
 
         m_ui.resetAccumulation |= ImGui::Checkbox("Alpha-Tested Geometry", (bool*)&m_ui.gbufferSettings.enableAlphaTestedGeometry);
         m_ui.resetAccumulation |= ImGui::Checkbox("Transparent Geometry", (bool*)&m_ui.gbufferSettings.enableTransparentGeometry);
+
+        m_ui.resetAccumulation |= ImGui::Checkbox("Enable Sun", (bool*)&m_ui.enableSunLight);
 
         const auto& environmentMaps = m_ui.resources->scene->GetEnvironmentMaps();
 
