@@ -155,6 +155,7 @@ struct UIData
     bool enableLocalLightImportanceSampling = true;
     float environmentIntensityBias = 0.f;
     float environmentRotation = 0.f;
+    bool enableSunLight = true;
     
     RtxgiParameters rtxgi;
     

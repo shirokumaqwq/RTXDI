@@ -1052,13 +1052,14 @@ public:
                 : m_RenderEnvironmentMapPass->GetTextureIndex();
             m_EnvironmentLight->radianceScale = ::exp2f(m_ui.environmentIntensityBias);
             m_EnvironmentLight->rotation = m_ui.environmentRotation / 360.f;  //  +/- 0.5
-            m_SunLight->irradiance = (m_ui.environmentMapIndex > 0) ? 0.f : 1.f;
+            //m_SunLight->irradiance = (m_ui.environmentMapIndex > 0) ? 0.f : 1.f;
         }
         else
         {
             m_EnvironmentLight->textureIndex = -1;
-            m_SunLight->irradiance = 0.f;
+            //m_SunLight->irradiance = 0.f;
         }
+        m_SunLight->irradiance = m_ui.enableSunLight ? max(m_SunLight->irradiance, 1.f) : 0.f;
         
 #if WITH_NRD
         if (!(m_NRD && m_NRD->IsAvailable()))

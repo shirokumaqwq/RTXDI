@@ -65,6 +65,7 @@ Buffer<uint> t_LightIndexMappingBuffer : register(t22);
 Texture2D t_EnvironmentPdfTexture : register(t23);
 Texture2D t_LocalLightPdfTexture : register(t24);
 StructuredBuffer<uint> t_GeometryInstanceToLight : register(t25);
+Buffer<uint> t_VisibleLightIndex : register(t26);
 
 // Screen-sized UAVs
 RWStructuredBuffer<RTXDI_PackedReservoir> u_LightReservoirs : register(u0);
@@ -80,6 +81,7 @@ RWBuffer<uint2> u_RisBuffer : register(u10);
 RWBuffer<uint4> u_RisLightDataBuffer : register(u11);
 RWBuffer<uint> u_RayCountBuffer : register(u12);
 RWStructuredBuffer<SecondaryGBufferData> u_SecondaryGBuffer : register(u13);
+RWBuffer<uint> u_GridVisibility : register(u14);
 
 // Other
 ConstantBuffer<ResamplingConstants> g_Const : register(b0);
@@ -91,6 +93,7 @@ SamplerState s_EnvironmentSampler : register(s1);
 #define RTXDI_LIGHT_RESERVOIR_BUFFER u_LightReservoirs
 #define RTXDI_NEIGHBOR_OFFSETS_BUFFER t_NeighborOffsets
 #define RTXDI_GI_RESERVOIR_BUFFER u_GIReservoirs
+#define RTXDI_VISIBILITY_BUFFER u_GridVisibility
 
 #define IES_SAMPLER s_EnvironmentSampler
 
@@ -857,6 +860,45 @@ uint getLightIndex(uint instanceID, uint geometryIndex, uint primitiveIndex)
     return lightIndex;
 }
 
+int GetVisibilityBufferLightIndex(uint lightIndex)
+{
+    // Use binary search to find the task that EmissionMesh or Primitive Light Index
+    // int left = 0;
+    // int right = int(g_Const.numTasks) - 1;
+
+    // while (right >= left)
+    // {
+    //     int middle = (left + right) / 2;
+    //     task = t_TaskBuffer[middle];
+
+    //     int tri = int(dispatchThreadId) - int(task.lightBufferOffset); // signed
+
+    //     if (tri < 0)
+    //     {
+    //         // Go left
+    //         right = middle - 1;
+    //     }
+    //     else if (tri < (task.triangleCount & 0xFFF))
+    //     {
+    //         // Found it!
+    //         return true;
+    //     }
+    //     else
+    //     {
+    //         // Go right
+    //         left = middle + 1;
+    //     }
+    // }
+
+    uint lightBufferOffset = lightIndex - g_Const.currentFrameLightOffset;
+    for(int n = 0; n < g_Const.numEmissionThing; n++)
+    {
+        if(lightBufferOffset < t_VisibleLightIndex[n])
+            return n;
+    }
+
+    return -1;
+}
 
 // Return true if anything was hit. If false, RTXDI will do environment map sampling
 // o_lightIndex: If hit, must be a valid light index for RAB_LoadLightInfo, if no local light was hit, must be RTXDI_InvalidLightIndex

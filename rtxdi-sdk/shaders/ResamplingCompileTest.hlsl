@@ -222,11 +222,13 @@ RWBuffer<uint2> u_RisBuffer;
 RWStructuredBuffer<RTXDI_PackedReservoir> u_LightReservoirs;
 RWStructuredBuffer<RTXDI_PackedGIReservoir> u_GIReservoirs;
 Buffer<float2> t_NeighborOffsets;
+RWBuffer<uint> u_GridVisibility;
 
 #define RTXDI_RIS_BUFFER u_RisBuffer
 #define RTXDI_LIGHT_RESERVOIR_BUFFER u_LightReservoirs
 #define RTXDI_GI_RESERVOIR_BUFFER u_GIReservoirs
 #define RTXDI_NEIGHBOR_OFFSETS_BUFFER t_NeighborOffsets
+#define RTXDI_VISIBILITY_BUFFER u_GridVisibility
 
 #include <rtxdi/ResamplingFunctions.hlsli>
 

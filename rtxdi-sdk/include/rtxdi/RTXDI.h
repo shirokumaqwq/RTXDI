@@ -92,6 +92,7 @@ namespace rtxdi
         uint32_t EnvironmentTileSize = 1024;
         uint32_t EnvironmentTileCount = 128;
 
+        bool enableVisibilityVairanceSampling = true;
         CheckerboardMode CheckerboardSamplingMode = CheckerboardMode::Off;
         
         ReGIRContextParameters ReGIR;
@@ -135,6 +136,10 @@ namespace rtxdi
 
         // Center of the ReGIR structure, in world space.
         float3 regirCenter{};
+
+        // for visibility buffer max size
+        uint32_t numEmissionThing;
+        uint32_t currentFrameLightOffset;
     };
 
 

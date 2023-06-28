@@ -76,7 +76,7 @@ struct PrepareLightsConstants
 struct PrepareLightsTask
 {
     uint instanceAndGeometryIndex; // low 12 bits are geometryIndex, mid 19 bits are instanceIndex, high bit is TASK_PRIMITIVE_LIGHT_BIT
-    uint triangleCount;
+    uint triangleCount; 
     uint lightBufferOffset;
     int previousLightBufferOffset; // -1 means no previous data
 };
@@ -225,7 +225,10 @@ struct ResamplingConstants
     uint enableAlphaTestedGeometry;
     uint enableReSTIRIndirect;
 
+//
     uint colorDenoiserMode;
+    uint numEmissionThing; //visibility buffer size
+    uint currentFrameLightOffset;
     
     uint enableTransparentGeometry;
     uint enableDenoiserInputPacking;

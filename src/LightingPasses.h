@@ -126,6 +126,7 @@ private:
     nvrhi::BufferHandle m_LightReservoirBuffer;
     nvrhi::BufferHandle m_SecondarySurfaceBuffer;
     nvrhi::BufferHandle m_GIReservoirBuffer;
+    nvrhi::BufferHandle m_VisibilityBuffer;
 
     dm::uint2 m_EnvironmentPdfTextureSize;
     dm::uint2 m_LocalLightPdfTextureSize;
